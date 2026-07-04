@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp" />
   <meta name="theme-color" content="#0b1a3a" />
   <title>Auto Viral Shorts Clipper</title>
 
-  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font Inter (optional) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
@@ -25,7 +24,6 @@
       padding: 1rem;
       margin: 0;
     }
-    /* Glassmorphism card */
     .glass {
       background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(16px) saturate(180%);
@@ -53,10 +51,7 @@
       box-shadow: 0 8px 28px rgba(79, 70, 229, 0.4);
       transition: all 0.2s;
     }
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 36px rgba(79, 70, 229, 0.55);
-    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(79,70,229,0.55); }
     .btn-primary:active { transform: scale(0.97); }
     .clip-card {
       background: rgba(17, 24, 39, 0.7);
@@ -77,7 +72,6 @@
       background: rgba(236, 72, 153, 0.15);
       border: 1px solid rgba(236, 72, 153, 0.15);
     }
-    select, input[type="file"] { color-scheme: dark; }
     select {
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -109,7 +103,6 @@
       70% { box-shadow: 0 0 0 30px rgba(129, 140, 248, 0); }
       100% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0); }
     }
-    /* responsive video preview */
     .video-preview {
       max-height: 200px;
       border-radius: 16px;
@@ -121,289 +114,451 @@
       height: auto;
       display: block;
     }
-    /* smooth scroll */
     html { scroll-behavior: smooth; }
+    .btn-download {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s;
+    }
+    .btn-download:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: #a5b4fc;
+    }
+    .btn-download:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
   </style>
 </head>
 <body>
 
-  <div class="w-full max-w-4xl mx-auto">
+<div class="w-full max-w-4xl mx-auto">
 
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-300 via-purple-200 to-pink-200 bg-clip-text text-transparent drop-shadow-xl">
-        ⚡ Auto Viral Clipper
-      </h1>
-      <p class="text-indigo-200/60 text-sm mt-1 tracking-wider">AI-powered short-form video engine</p>
-    </div>
-
-    <!-- Main Card -->
-    <div class="glass rounded-3xl p-5 md:p-8">
-
-      <!-- Upload Area -->
-      <div id="uploadArea" class="upload-zone rounded-3xl p-8 md:p-12 text-center cursor-pointer transition-all">
-        <input type="file" id="fileInput" accept="video/*" class="hidden" />
-        <div onclick="document.getElementById('fileInput').click()" class="flex flex-col items-center">
-          <div class="w-20 h-20 rounded-full bg-indigo-600/20 flex items-center justify-center text-4xl mb-4 pulse-ring">
-            📤
-          </div>
-          <h3 class="text-xl font-semibold text-white">Upload video kamu</h3>
-          <p class="text-indigo-200/60 mt-1 text-sm">MP4, MOV · Maks 100MB (demo)</p>
-          <span class="mt-5 inline-block bg-indigo-600/30 px-6 py-2.5 rounded-2xl text-sm font-medium text-indigo-200 border border-indigo-400/20 backdrop-blur-sm">
-            Pilih file
-          </span>
-        </div>
-      </div>
-
-      <!-- File Info & Controls -->
-      <div id="fileInfo" class="hidden mt-6">
-        <!-- Preview & nama file -->
-        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white/5 rounded-2xl p-4 border border-white/5">
-          <div class="video-preview w-full sm:w-40 flex-shrink-0">
-            <video id="videoPreview" controls class="w-full h-auto"></video>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p id="filename" class="font-semibold text-lg truncate text-white/90"></p>
-            <p id="fileSize" class="text-indigo-300/50 text-xs"></p>
-            <p id="fileDuration" class="text-indigo-300/50 text-xs"></p>
-          </div>
-          <button onclick="resetUpload()" class="text-sm text-indigo-300/50 hover:text-white transition px-3 py-1 rounded-full hover:bg-white/5">✕</button>
-        </div>
-
-        <!-- Kontrol -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-6">
-          <div>
-            <label class="block text-sm font-medium text-indigo-200/80 mb-2">⏱️ Durasi Clip</label>
-            <select id="duration" class="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 text-white focus:border-indigo-400 transition">
-              <option value="15">15 detik</option>
-              <option value="30" selected>30 detik</option>
-              <option value="60">60 detik</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-indigo-200/80 mb-2">📦 Jumlah Clip</label>
-            <select id="numClips" class="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 text-white focus:border-indigo-400 transition">
-              <option value="3">3 Clip</option>
-              <option value="5" selected>5 Clip</option>
-              <option value="8">8 Clip</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-indigo-200/80 mb-2">✨ Fitur</label>
-            <div class="space-y-1.5 text-sm text-indigo-200/80">
-              <label class="flex items-center"><input type="checkbox" id="subtitle" checked /> Auto Subtitle</label>
-              <label class="flex items-center"><input type="checkbox" id="viral" checked /> Deteksi Momen Viral</label>
-              <label class="flex items-center"><input type="checkbox" id="music" checked /> Tambah Musik Cocok</label>
-            </div>
-          </div>
-        </div>
-
-        <button onclick="startProcessing()" class="btn-primary w-full mt-8 py-5 rounded-3xl font-bold text-xl text-white tracking-wide transition-all">
-          🔥 Proses & Buat Viral Shorts
-        </button>
-      </div>
-
-      <!-- Processing -->
-      <div id="processing" class="hidden text-center py-12">
-        <div class="relative w-28 h-28 mx-auto mb-6">
-          <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20 animate-spin border-t-indigo-400"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-4xl">⚡</div>
-        </div>
-        <p class="text-xl font-semibold text-white">Menganalisis suara & momen viral...</p>
-        <div class="max-w-xs mx-auto mt-5 bg-white/5 rounded-full h-2 overflow-hidden">
-          <div id="progressFill" class="progress-fill h-full"></div>
-        </div>
-        <p id="status" class="text-indigo-200/60 mt-4 text-sm">Mendeteksi subtitle · Mencari peak moment · Matching music</p>
-      </div>
-
-      <!-- Results -->
-      <div id="results" class="hidden mt-6">
-        <div class="flex items-center justify-between mb-5">
-          <h2 class="text-2xl font-bold text-white">🎯 Clip Viral</h2>
-          <span class="bg-indigo-600/30 text-indigo-200 text-xs px-4 py-2 rounded-full border border-indigo-400/20">AI generated</span>
-        </div>
-        <div id="clips" class="space-y-4"></div>
-      </div>
-
-    </div>
-
-    <!-- Footer -->
-    <div class="text-center text-indigo-200/20 text-[10px] mt-6 tracking-widest">
-      AUTO VIRAL CLIPPER · next-gen AI
-    </div>
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-300 via-purple-200 to-pink-200 bg-clip-text text-transparent drop-shadow-xl">
+      ⚡ Auto Viral Clipper
+    </h1>
+    <p class="text-indigo-200/60 text-sm mt-1 tracking-wider">AI-powered short-form video engine</p>
   </div>
 
-  <script>
-    // ----- DOM refs -----
-    const fileInput = document.getElementById('fileInput');
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInfo = document.getElementById('fileInfo');
-    const filename = document.getElementById('filename');
-    const fileSize = document.getElementById('fileSize');
-    const fileDuration = document.getElementById('fileDuration');
-    const videoPreview = document.getElementById('videoPreview');
+  <!-- Main Card -->
+  <div class="glass rounded-3xl p-5 md:p-8">
 
-    let file = null;
+    <!-- Upload Area -->
+    <div id="uploadArea" class="upload-zone rounded-3xl p-8 md:p-12 text-center cursor-pointer transition-all">
+      <input type="file" id="fileInput" accept="video/*" class="hidden" />
+      <div onclick="document.getElementById('fileInput').click()" class="flex flex-col items-center">
+        <div class="w-20 h-20 rounded-full bg-indigo-600/20 flex items-center justify-center text-4xl mb-4 pulse-ring">
+          📤
+        </div>
+        <h3 class="text-xl font-semibold text-white">Upload video kamu</h3>
+        <p class="text-indigo-200/60 mt-1 text-sm">MP4, MOV · Maks 100MB (demo)</p>
+        <span class="mt-5 inline-block bg-indigo-600/30 px-6 py-2.5 rounded-2xl text-sm font-medium text-indigo-200 border border-indigo-400/20 backdrop-blur-sm">
+          Pilih file
+        </span>
+      </div>
+    </div>
 
-    // ----- Upload handler -----
-    fileInput.addEventListener('change', (e) => {
-      const f = e.target.files[0];
-      if (!f) return;
-      file = f;
-      filename.textContent = f.name;
-      fileSize.textContent = `Ukuran: ${(f.size / (1024 * 1024)).toFixed(2)} MB`;
+    <!-- File Info & Controls -->
+    <div id="fileInfo" class="hidden mt-6">
+      <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white/5 rounded-2xl p-4 border border-white/5">
+        <div class="video-preview w-full sm:w-40 flex-shrink-0">
+          <video id="videoPreview" controls class="w-full h-auto"></video>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p id="filename" class="font-semibold text-lg truncate text-white/90"></p>
+          <p id="fileSize" class="text-indigo-300/50 text-xs"></p>
+          <p id="fileDuration" class="text-indigo-300/50 text-xs"></p>
+        </div>
+        <button onclick="resetUpload()" class="text-sm text-indigo-300/50 hover:text-white transition px-3 py-1 rounded-full hover:bg-white/5">✕</button>
+      </div>
 
-      // Preview video
-      const url = URL.createObjectURL(f);
-      videoPreview.src = url;
-      videoPreview.onloadedmetadata = () => {
-        const dur = videoPreview.duration;
-        const min = Math.floor(dur / 60);
-        const sec = Math.floor(dur % 60);
-        fileDuration.textContent = `Durasi: ${min}:${sec.toString().padStart(2, '0')}`;
-      };
-
-      uploadArea.classList.add('hidden');
-      fileInfo.classList.remove('hidden');
-    });
-
-    // ----- Drag & drop support -----
-    uploadArea.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadArea.classList.add('dragover');
-    });
-    uploadArea.addEventListener('dragleave', () => {
-      uploadArea.classList.remove('dragover');
-    });
-    uploadArea.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadArea.classList.remove('dragover');
-      const files = e.dataTransfer.files;
-      if (files.length) {
-        fileInput.files = files;
-        fileInput.dispatchEvent(new Event('change'));
-      }
-    });
-
-    // ----- Reset -----
-    function resetUpload() {
-      file = null;
-      fileInput.value = '';
-      videoPreview.src = '';
-      uploadArea.classList.remove('hidden');
-      fileInfo.classList.add('hidden');
-      document.getElementById('results').classList.add('hidden');
-      document.getElementById('processing').classList.add('hidden');
-    }
-
-    // ----- Processing simulation -----
-    function startProcessing() {
-      // Sembunyikan info, tampilkan processing
-      fileInfo.classList.add('hidden');
-      document.getElementById('results').classList.add('hidden');
-      document.getElementById('processing').classList.remove('hidden');
-
-      const status = document.getElementById('status');
-      const progressFill = document.getElementById('progressFill');
-      let progress = 0;
-
-      const statuses = [
-        '🔍 Menganalisis audio & subtitle...',
-        '📈 Mendeteksi momen viral & peak energy...',
-        '🎵 Matching musik trending...',
-        '✂️ Memotong & merender clip...'
-      ];
-
-      let step = 0;
-      const interval = setInterval(() => {
-        progress += 6 + Math.random() * 4;
-        if (progress > 100) progress = 100;
-        progressFill.style.width = progress + '%';
-
-        if (progress < 30) status.textContent = statuses[0];
-        else if (progress < 55) status.textContent = statuses[1];
-        else if (progress < 80) status.textContent = statuses[2];
-        else if (progress < 100) status.textContent = statuses[3];
-        else status.textContent = '✅ Selesai!';
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            document.getElementById('processing').classList.add('hidden');
-            showResults();
-          }, 400);
-        }
-      }, 150);
-    }
-
-    // ----- Show results -----
-    function showResults() {
-      const container = document.getElementById('clips');
-      container.innerHTML = '';
-
-      const numClips = parseInt(document.getElementById('numClips').value);
-      const duration = parseInt(document.getElementById('duration').value);
-
-      // Daftar clip template (waktu disesuaikan)
-      const clipsData = [
-        { num: 1, time: `0:${String(duration * 1).padStart(2, '0')}`, peak: '🔥 Viral Peak', music: 'Upbeat Trending' },
-        { num: 2, time: `0:${String(duration * 2 + 5).padStart(2, '0')}`, peak: '😂 Lucu / Emotional', music: 'Emotional Slow' },
-        { num: 3, time: `1:${String(duration * 3 - 2).padStart(2, '0')}`, peak: '⚡ Action', music: 'Energetic EDM' },
-        { num: 4, time: `1:${String(duration * 4 - 8).padStart(2, '0')}`, peak: '😲 Surprise', music: 'Trend Audio' },
-        { num: 5, time: `2:${String(duration * 5 - 15).padStart(2, '0')}`, peak: '🎯 Conclusion', music: 'Motivational' },
-        { num: 6, time: `2:${String(duration * 6 - 20).padStart(2, '0')}`, peak: '💥 Climax', music: 'Epic Orchestral' },
-        { num: 7, time: `3:${String(duration * 7 - 25).padStart(2, '0')}`, peak: '✨ Plot Twist', music: 'Mystery' },
-        { num: 8, time: `3:${String(duration * 8 - 30).padStart(2, '0')}`, peak: '🏁 Ending', music: 'Chill Lofi' }
-      ];
-
-      const selected = clipsData.slice(0, numClips);
-      const iconColors = [
-        'from-indigo-500 to-purple-600',
-        'from-pink-500 to-rose-600',
-        'from-blue-500 to-cyan-600',
-        'from-amber-500 to-orange-600',
-        'from-emerald-500 to-teal-600',
-        'from-violet-500 to-fuchsia-600',
-        'from-cyan-500 to-blue-600',
-        'from-rose-500 to-red-600'
-      ];
-
-      selected.forEach((clip, idx) => {
-        const div = document.createElement('div');
-        div.className = 'clip-card rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center transition-all';
-
-        const color = iconColors[(clip.num - 1) % iconColors.length];
-
-        div.innerHTML = `
-          <div class="w-full sm:w-24 h-24 rounded-2xl bg-gradient-to-br ${color} flex-shrink-0 flex items-center justify-center text-4xl shadow-lg">
-            📱
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-6">
+        <div>
+          <label class="block text-sm font-medium text-indigo-200/80 mb-2">⏱️ Durasi Clip</label>
+          <select id="duration" class="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 text-white focus:border-indigo-400 transition">
+            <option value="15">15 detik</option>
+            <option value="30" selected>30 detik</option>
+            <option value="60">60 detik</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-indigo-200/80 mb-2">📦 Jumlah Clip</label>
+          <select id="numClips" class="w-full rounded-2xl px-5 py-4 bg-white/5 border border-white/10 text-white focus:border-indigo-400 transition">
+            <option value="3">3 Clip</option>
+            <option value="5" selected>5 Clip</option>
+            <option value="8">8 Clip</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-indigo-200/80 mb-2">✨ Fitur</label>
+          <div class="space-y-1.5 text-sm text-indigo-200/80">
+            <label class="flex items-center"><input type="checkbox" id="subtitle" checked /> Auto Subtitle</label>
+            <label class="flex items-center"><input type="checkbox" id="viral" checked /> Deteksi Momen Viral</label>
+            <label class="flex items-center"><input type="checkbox" id="music" checked /> Tambah Musik Cocok</label>
           </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <h3 class="text-lg font-bold text-white">Clip ${clip.num}</h3>
-              <span class="text-xs bg-white/5 px-3 py-1 rounded-full text-indigo-200/70 border border-white/5">${clip.time}</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 mt-1.5">
-              <span class="badge-viral text-[10px] px-3 py-1 rounded-full text-white font-medium">${clip.peak}</span>
-              <span class="badge-music text-[10px] px-3 py-1 rounded-full text-pink-200/80 font-medium">🎵 ${clip.music}</span>
-              <span class="text-[10px] text-indigo-300/40">subtitle ✅</span>
-            </div>
-          </div>
-          <button onclick="alert('⬇️ Download Clip ${clip.num} · dengan subtitle & music')" 
-                  class="btn-download w-full sm:w-auto px-5 py-2.5 rounded-2xl font-medium text-white/80 text-sm transition-all bg-white/5 hover:bg-white/10 border border-white/5">
-            Download
-          </button>
-        `;
-        container.appendChild(div);
-      });
+        </div>
+      </div>
 
-      document.getElementById('results').classList.remove('hidden');
-      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      <button onclick="startProcessing()" class="btn-primary w-full mt-8 py-5 rounded-3xl font-bold text-xl text-white tracking-wide transition-all">
+        🔥 Proses & Buat Viral Shorts
+      </button>
+    </div>
+
+    <!-- Processing -->
+    <div id="processing" class="hidden text-center py-12">
+      <div class="relative w-28 h-28 mx-auto mb-6">
+        <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20 animate-spin border-t-indigo-400"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-4xl">⚡</div>
+      </div>
+      <p class="text-xl font-semibold text-white">Menganalisis suara & momen viral...</p>
+      <div class="max-w-xs mx-auto mt-5 bg-white/5 rounded-full h-2 overflow-hidden">
+        <div id="progressFill" class="progress-fill h-full"></div>
+      </div>
+      <p id="status" class="text-indigo-200/60 mt-4 text-sm">Mendeteksi subtitle · Mencari peak moment · Matching music</p>
+    </div>
+
+    <!-- Results -->
+    <div id="results" class="hidden mt-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-2xl font-bold text-white">🎯 Clip Viral</h2>
+        <span class="bg-indigo-600/30 text-indigo-200 text-xs px-4 py-2 rounded-full border border-indigo-400/20">AI generated</span>
+      </div>
+      <div id="clips" class="space-y-4"></div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center text-indigo-200/20 text-[10px] mt-6 tracking-widest">
+    AUTO VIRAL CLIPPER · next-gen AI
+  </div>
+</div>
+
+<!-- ================ SCRIPT UTAMA ================ -->
+<script type="importmap">
+{
+  "imports": {
+    "@ffmpeg/ffmpeg": "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js",
+    "@ffmpeg/core": "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/index.js",
+    "@ffmpeg/util": "https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js"
+  }
+}
+</script>
+
+<script type="module">
+// -------------------- imports --------------------
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
+
+// -------------------- DOM refs --------------------
+const fileInput = document.getElementById('fileInput');
+const uploadArea = document.getElementById('uploadArea');
+const fileInfo = document.getElementById('fileInfo');
+const filename = document.getElementById('filename');
+const fileSize = document.getElementById('fileSize');
+const fileDuration = document.getElementById('fileDuration');
+const videoPreview = document.getElementById('videoPreview');
+const progressFill = document.getElementById('progressFill');
+const statusEl = document.getElementById('status');
+const clipsContainer = document.getElementById('clips');
+
+let file = null;               // File asli
+let videoDuration = 0;        // durasi video dalam detik
+let clipDataList = [];        // array { start, end, duration, ... }
+
+// -------------------- FFmpeg instance (lazy) --------------------
+let ffmpeg = null;
+let ffmpegLoaded = false;
+
+async function loadFFmpeg() {
+  if (ffmpegLoaded) return ffmpeg;
+  try {
+    statusEl.textContent = '⏳ Memuat FFmpeg (butuh beberapa detik)...';
+    ffmpeg = new FFmpeg();
+    // menggunakan CDN untuk core
+    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+    });
+    ffmpegLoaded = true;
+    statusEl.textContent = '✅ FFmpeg siap!';
+    return ffmpeg;
+  } catch (err) {
+    console.error('Gagal load FFmpeg:', err);
+    statusEl.textContent = '❌ Gagal memuat FFmpeg. Periksa koneksi dan CORS.';
+    throw err;
+  }
+}
+
+// -------------------- fungsi potong video --------------------
+async function cutVideo(startSec, durationSec, index) {
+  if (!ffmpegLoaded) await loadFFmpeg();
+  if (!file) throw new Error('Video belum diupload.');
+
+  // baca file asli
+  const data = await file.arrayBuffer();
+  const inputName = 'input.mp4';
+  const outputName = `clip_${index}.mp4`;
+
+  // tulis ke filesystem FFmpeg
+  ffmpeg.fs.writeFile(inputName, new Uint8Array(data));
+
+  // perintah: potong tanpa re-encode (stream copy)
+  const cmd = [
+    '-ss', String(startSec),
+    '-i', inputName,
+    '-t', String(durationSec),
+    '-c', 'copy',
+    outputName
+  ];
+
+  // jalankan
+  await ffmpeg.exec(cmd);
+
+  // baca hasil
+  const outputData = ffmpeg.fs.readFile(outputName);
+  const blob = new Blob([outputData.buffer], { type: 'video/mp4' });
+
+  // bersihkan file sementara
+  ffmpeg.fs.unlink(inputName);
+  ffmpeg.fs.unlink(outputName);
+
+  return blob;
+}
+
+// -------------------- upload handler --------------------
+fileInput.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  file = f;
+  filename.textContent = f.name;
+  fileSize.textContent = `Ukuran: ${(f.size / (1024 * 1024)).toFixed(2)} MB`;
+
+  const url = URL.createObjectURL(f);
+  videoPreview.src = url;
+  videoPreview.onloadedmetadata = () => {
+    videoDuration = videoPreview.duration;
+    const min = Math.floor(videoDuration / 60);
+    const sec = Math.floor(videoDuration % 60);
+    fileDuration.textContent = `Durasi: ${min}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  uploadArea.classList.add('hidden');
+  fileInfo.classList.remove('hidden');
+});
+
+// Drag & drop
+uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length) {
+    fileInput.files = files;
+    fileInput.dispatchEvent(new Event('change'));
+  }
+});
+
+// Reset
+window.resetUpload = function() {
+  file = null;
+  fileInput.value = '';
+  videoPreview.src = '';
+  uploadArea.classList.remove('hidden');
+  fileInfo.classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('processing').classList.add('hidden');
+  clipDataList = [];
+};
+
+// -------------------- proses analisis (simulasi) --------------------
+window.startProcessing = function() {
+  // ambil parameter
+  const duration = parseInt(document.getElementById('duration').value);
+  const numClips = parseInt(document.getElementById('numClips').value);
+
+  if (!file) {
+    alert('Upload video dulu!');
+    return;
+  }
+  if (videoDuration === 0) {
+    alert('Video belum selesai dimuat. Tunggu sebentar.');
+    return;
+  }
+
+  // sembunyikan info, tampilkan processing
+  fileInfo.classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('processing').classList.remove('hidden');
+
+  let progress = 0;
+  const statuses = [
+    '🔍 Menganalisis audio & subtitle...',
+    '📈 Mendeteksi momen viral & peak energy...',
+    '🎵 Matching musik trending...',
+    '✂️ Memotong & merender clip...'
+  ];
+
+  const interval = setInterval(() => {
+    progress += 6 + Math.random() * 4;
+    if (progress > 100) progress = 100;
+    progressFill.style.width = progress + '%';
+
+    if (progress < 30) statusEl.textContent = statuses[0];
+    else if (progress < 55) statusEl.textContent = statuses[1];
+    else if (progress < 80) statusEl.textContent = statuses[2];
+    else if (progress < 100) statusEl.textContent = statuses[3];
+    else statusEl.textContent = '✅ Selesai!';
+
+    if (progress >= 100) {
+      clearInterval(interval);
+      // generate clip data
+      generateClipData(duration, numClips);
+      setTimeout(() => {
+        document.getElementById('processing').classList.add('hidden');
+        renderResults();
+      }, 400);
     }
+  }, 150);
+};
 
-    // ----- Expose functions to global scope -----
-    window.resetUpload = resetUpload;
-    window.startProcessing = startProcessing;
-  </script>
+// -------------------- generate data clip --------------------
+function generateClipData(duration, numClips) {
+  clipDataList = [];
+  const total = videoDuration;
+  // bagi rata dari awal
+  const gap = Math.min(duration + 2, total / numClips);
+  for (let i = 0; i < numClips; i++) {
+    let start = i * gap;
+    // pastikan tidak melebihi durasi
+    if (start + duration > total) {
+      start = Math.max(0, total - duration);
+    }
+    clipDataList.push({
+      start: Math.round(start * 10) / 10,
+      end: Math.round((start + duration) * 10) / 10,
+      duration: duration,
+      peak: ['🔥 Viral Peak', '😂 Lucu', '⚡ Action', '😲 Surprise', '🎯 Conclusion', '💥 Climax', '✨ Plot Twist', '🏁 Ending'][i % 8],
+      music: ['Upbeat Trending', 'Emotional Slow', 'Energetic EDM', 'Trend Audio', 'Motivational', 'Epic Orchestral', 'Mystery', 'Chill Lofi'][i % 8]
+    });
+  }
+}
+
+// -------------------- render hasil clip --------------------
+function renderResults() {
+  const container = clipsContainer;
+  container.innerHTML = '';
+
+  const iconColors = [
+    'from-indigo-500 to-purple-600',
+    'from-pink-500 to-rose-600',
+    'from-blue-500 to-cyan-600',
+    'from-amber-500 to-orange-600',
+    'from-emerald-500 to-teal-600',
+    'from-violet-500 to-fuchsia-600',
+    'from-cyan-500 to-blue-600',
+    'from-rose-500 to-red-600'
+  ];
+
+  clipDataList.forEach((clip, idx) => {
+    const div = document.createElement('div');
+    div.className = 'clip-card rounded-2xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center transition-all';
+    const color = iconColors[idx % iconColors.length];
+
+    const startStr = formatTime(clip.start);
+    const endStr = formatTime(clip.end);
+
+    div.innerHTML = `
+      <div class="w-full sm:w-24 h-24 rounded-2xl bg-gradient-to-br ${color} flex-shrink-0 flex items-center justify-center text-4xl shadow-lg">
+        📱
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <h3 class="text-lg font-bold text-white">Clip ${idx+1}</h3>
+          <span class="text-xs bg-white/5 px-3 py-1 rounded-full text-indigo-200/70 border border-white/5">${startStr} – ${endStr}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mt-1.5">
+          <span class="badge-viral text-[10px] px-3 py-1 rounded-full text-white font-medium">${clip.peak}</span>
+          <span class="badge-music text-[10px] px-3 py-1 rounded-full text-pink-200/80 font-medium">🎵 ${clip.music}</span>
+          <span class="text-[10px] text-indigo-300/40">subtitle ✅</span>
+        </div>
+      </div>
+      <button data-index="${idx}" class="download-btn btn-download w-full sm:w-auto px-5 py-2.5 rounded-2xl font-medium text-white/80 text-sm transition-all bg-white/5 hover:bg-white/10 border border-white/5">
+        ⬇️ Download
+      </button>
+    `;
+    container.appendChild(div);
+  });
+
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // pasang event listener untuk tombol download
+  document.querySelectorAll('.download-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const idx = parseInt(btn.dataset.index);
+      await handleDownloadClip(idx, btn);
+    });
+  });
+}
+
+// -------------------- handler download clip --------------------
+async function handleDownloadClip(index, btn) {
+  const clip = clipDataList[index];
+  if (!clip) return;
+
+  // disable tombol
+  btn.disabled = true;
+  btn.textContent = '⏳ Memotong...';
+
+  try {
+    // pastikan FFmpeg sudah dimuat
+    await loadFFmpeg();
+
+    const blob = await cutVideo(clip.start, clip.duration, index);
+
+    // trigger download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clip_${index+1}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    btn.textContent = '✅ Selesai';
+    setTimeout(() => {
+      btn.textContent = '⬇️ Download';
+      btn.disabled = false;
+    }, 2000);
+  } catch (err) {
+    console.error(err);
+    alert('Gagal memotong video: ' + err.message);
+    btn.textContent = '❌ Gagal';
+    setTimeout(() => {
+      btn.textContent = '⬇️ Download';
+      btn.disabled = false;
+    }, 2000);
+  }
+}
+
+// -------------------- helper --------------------
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// -------------------- inisialisasi status --------------------
+statusEl.textContent = 'Siap memproses...';
+
+console.log('✅ Auto Viral Clipper siap!');
+</script>
 </body>
 </html>
