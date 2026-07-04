@@ -154,7 +154,7 @@
           📤
         </div>
         <h3 class="text-xl font-semibold text-white">Upload video kamu</h3>
-        <p class="text-indigo-200/60 mt-1 text-sm">MP4, MOV · Maks 100MB (demo)</p>
+        <p class="text-indigo-200/60 mt-1 text-sm">MP4, MOV · Maks 100MB</p>
         <span class="mt-5 inline-block bg-indigo-600/30 px-6 py-2.5 rounded-2xl text-sm font-medium text-indigo-200 border border-indigo-400/20 backdrop-blur-sm">
           Pilih file
         </span>
@@ -241,9 +241,9 @@
 <script type="importmap">
 {
   "imports": {
-    "@ffmpeg/ffmpeg": "https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js",
-    "@ffmpeg/core": "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm/index.js",
-    "@ffmpeg/util": "https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js"
+    "@ffmpeg/ffmpeg": "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js",
+    "@ffmpeg/core": "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/index.js",
+    "@ffmpeg/util": "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js"
   }
 }
 </script>
@@ -251,7 +251,7 @@
 <script type="module">
 // -------------------- imports --------------------
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import { toBlobURL } from '@ffmpeg/util';
 
 // -------------------- DOM refs --------------------
 const fileInput = document.getElementById('fileInput');
@@ -265,49 +265,47 @@ const progressFill = document.getElementById('progressFill');
 const statusEl = document.getElementById('status');
 const clipsContainer = document.getElementById('clips');
 
-let file = null;               // File asli
-let videoDuration = 0;        // durasi video dalam detik
-let clipDataList = [];        // array { start, end, duration, ... }
+let file = null;
+let videoDuration = 0;
+let clipDataList = [];
 
-// -------------------- FFmpeg instance (lazy) --------------------
+// -------------------- FFmpeg instance --------------------
 let ffmpeg = null;
 let ffmpegLoaded = false;
 
 async function loadFFmpeg() {
   if (ffmpegLoaded) return ffmpeg;
   try {
-    statusEl.textContent = '⏳ Memuat FFmpeg (butuh beberapa detik)...';
+    statusEl.textContent = '⏳ Memuat FFmpeg...';
     ffmpeg = new FFmpeg();
-    // menggunakan CDN untuk core
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+    
+    const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
     await ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
     });
+    
     ffmpegLoaded = true;
     statusEl.textContent = '✅ FFmpeg siap!';
     return ffmpeg;
   } catch (err) {
     console.error('Gagal load FFmpeg:', err);
-    statusEl.textContent = '❌ Gagal memuat FFmpeg. Periksa koneksi dan CORS.';
+    statusEl.textContent = '❌ Gagal memuat FFmpeg. Coba refresh.';
     throw err;
   }
 }
 
-// -------------------- fungsi potong video --------------------
+// -------------------- potong video --------------------
 async function cutVideo(startSec, durationSec, index) {
   if (!ffmpegLoaded) await loadFFmpeg();
   if (!file) throw new Error('Video belum diupload.');
 
-  // baca file asli
   const data = await file.arrayBuffer();
   const inputName = 'input.mp4';
   const outputName = `clip_${index}.mp4`;
 
-  // tulis ke filesystem FFmpeg
   ffmpeg.fs.writeFile(inputName, new Uint8Array(data));
 
-  // perintah: potong tanpa re-encode (stream copy)
   const cmd = [
     '-ss', String(startSec),
     '-i', inputName,
@@ -316,14 +314,11 @@ async function cutVideo(startSec, durationSec, index) {
     outputName
   ];
 
-  // jalankan
   await ffmpeg.exec(cmd);
 
-  // baca hasil
   const outputData = ffmpeg.fs.readFile(outputName);
   const blob = new Blob([outputData.buffer], { type: 'video/mp4' });
 
-  // bersihkan file sementara
   ffmpeg.fs.unlink(inputName);
   ffmpeg.fs.unlink(outputName);
 
@@ -376,9 +371,8 @@ window.resetUpload = function() {
   clipDataList = [];
 };
 
-// -------------------- proses analisis (simulasi) --------------------
+// -------------------- proses --------------------
 window.startProcessing = function() {
-  // ambil parameter
   const duration = parseInt(document.getElementById('duration').value);
   const numClips = parseInt(document.getElementById('numClips').value);
 
@@ -391,7 +385,6 @@ window.startProcessing = function() {
     return;
   }
 
-  // sembunyikan info, tampilkan processing
   fileInfo.classList.add('hidden');
   document.getElementById('results').classList.add('hidden');
   document.getElementById('processing').classList.remove('hidden');
@@ -417,7 +410,6 @@ window.startProcessing = function() {
 
     if (progress >= 100) {
       clearInterval(interval);
-      // generate clip data
       generateClipData(duration, numClips);
       setTimeout(() => {
         document.getElementById('processing').classList.add('hidden');
@@ -431,11 +423,9 @@ window.startProcessing = function() {
 function generateClipData(duration, numClips) {
   clipDataList = [];
   const total = videoDuration;
-  // bagi rata dari awal
   const gap = Math.min(duration + 2, total / numClips);
   for (let i = 0; i < numClips; i++) {
     let start = i * gap;
-    // pastikan tidak melebihi durasi
     if (start + duration > total) {
       start = Math.max(0, total - duration);
     }
@@ -449,7 +439,7 @@ function generateClipData(duration, numClips) {
   }
 }
 
-// -------------------- render hasil clip --------------------
+// -------------------- render hasil --------------------
 function renderResults() {
   const container = clipsContainer;
   container.innerHTML = '';
@@ -498,7 +488,6 @@ function renderResults() {
   document.getElementById('results').classList.remove('hidden');
   document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  // pasang event listener untuk tombol download
   document.querySelectorAll('.download-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const idx = parseInt(btn.dataset.index);
@@ -507,22 +496,18 @@ function renderResults() {
   });
 }
 
-// -------------------- handler download clip --------------------
+// -------------------- download handler --------------------
 async function handleDownloadClip(index, btn) {
   const clip = clipDataList[index];
   if (!clip) return;
 
-  // disable tombol
   btn.disabled = true;
   btn.textContent = '⏳ Memotong...';
 
   try {
-    // pastikan FFmpeg sudah dimuat
     await loadFFmpeg();
-
     const blob = await cutVideo(clip.start, clip.duration, index);
 
-    // trigger download
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -555,10 +540,8 @@ function formatTime(seconds) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// -------------------- inisialisasi status --------------------
 statusEl.textContent = 'Siap memproses...';
-
 console.log('✅ Auto Viral Clipper siap!');
 </script>
 </body>
-</html>
+  </html>
